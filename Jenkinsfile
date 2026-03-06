@@ -4,19 +4,24 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building Docker image...'
-                sh 'docker build -t myapp:latest .' 
+                sh 'docker build -t kimapp:latest .'
             }
         }
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                sh 'echo "Tests passed!"' 
+                sh 'echo "Tests passed!"'
             }
         }
         stage('Deploy') {
             steps {
-                echo 'Deploy stage (local)'
-                sh 'docker images' 
+                echo 'Pushing Docker image to DockerHub...'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+           
+         sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'docker tag kimapp:latest $DOCKER_USER/kimapp:latest'
+                    sh 'docker push $DOCKER_USER/kimapp:latest'
+                }
             }
         }
     }
